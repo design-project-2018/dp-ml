@@ -169,17 +169,17 @@ def train():
              _,batch_loss = sess.run([optimizer,loss], feed_dict={x: batch_xs, y: batch_ys, keep: [0.5]})
              epoch_loss[batch-1] = batch_loss/batch_size
          # print one epoch
-         print "Epoch:", epoch+1, " done. Loss:", np.mean(epoch_loss)
+         print("Epoch:", epoch+1, " done. Loss:", np.mean(epoch_loss))
          tStop_epoch = time.time()
-         print "Epoch Time Cost:", round(tStop_epoch - tStart_epoch,2), "s"
+         print("Epoch Time Cost:", round(tStop_epoch - tStart_epoch,2), "s")
          sys.stdout.flush()
          if (epoch+1) %5 == 0:
             saver.save(sess,save_path+"model", global_step = epoch+1)
-            print "Training"
+            print("Training")
             test_all(sess,train_num,train_path,x,keep,y,loss,lstm_variables,soft_pred)
-            print "Testing"
+            print("Testing")
             test_all(sess,test_num,test_path,x,keep,y,loss,lstm_variables,soft_pred)
-    print "Optimization Finished!"
+    print("Optimization Finished!")
     saver.save(sess, save_path+"final_model")
 
 def test_all(sess,num,path,x,keep,y,loss,lstm_variables,soft_pred):
@@ -276,10 +276,10 @@ def evaluation(all_pred,all_labels, total_time = 90, vis = False, length = None)
     for i in range(1,len(new_Precision)):
         AP += (new_Precision[i-1]+new_Precision[i])*(new_Recall[i]-new_Recall[i-1])/2
 
-    print "Average Precision= " + "{:.4f}".format(AP) + " ,mean Time to accident= " +"{:.4}".format(np.mean(new_Time) * 5)
+    print("Average Precision= " + "{:.4f}".format(AP) + " ,mean Time to accident= " +"{:.4}".format(np.mean(new_Time) * 5))
     sort_time = new_Time[np.argsort(new_Recall)]
     sort_recall = np.sort(new_Recall)
-    print "Recall@80%, Time to accident= " +"{:.4}".format(sort_time[np.argmin(np.abs(sort_recall-0.8))] * 5)
+    print("Recall@80%, Time to accident= " +"{:.4}".format(sort_time[np.argmin(np.abs(sort_recall-0.8))] * 5))
 
     ### visualize
 
@@ -374,10 +374,10 @@ def test(model_path):
     sess.run(init)
     saver = tf.train.Saver()
     saver.restore(sess, model_path)
-    print "model restore!!!"
-    print "Training"
+    print ("model restore!!!")
+    print ("Training")
     test_all(sess,train_num,train_path,x,keep,y,loss,lstm_variables,soft_pred)
-    print "Testing"
+    print ("Testing")
     test_all(sess,test_num,test_path,x,keep,y,loss,lstm_variables,soft_pred)
 
 
