@@ -1,5 +1,8 @@
+import os
+os.environ["TF_CPP_MIN_LOG_LEVEL"]="3"
 import cv2
 import tensorflow as tf
+from tensorflow.contrib import rnn as tf_rnn
 import argparse
 import numpy as np
 import os
@@ -8,8 +11,9 @@ import time
 import matplotlib.pyplot as plt
 import sys
 
-############### Global Parameters ###############
-# path
+############## Global Parameters #################
+
+#path
 train_path = './dataset/features/training/'
 test_path = './dataset/features/testing/'
 demo_path = './dataset/features/testing/'
@@ -77,7 +81,7 @@ def build_model():
     lstm_cell = tf.contrib.rnn.LSTMCell(n_hidden,initializer= tf.random_normal_initializer(mean=0.0,stddev=0.01),use_peepholes = True,state_is_tuple = False)
     # using dropout in output of LSTM
     lstm_cell_dropout = tf.nn.rnn_cell.DropoutWrapper(lstm_cell,output_keep_prob=1 - keep[0])
-    # init LSTM parameters
+    ## init LSTM parameters
     istate = tf.zeros([batch_size, lstm_cell.state_size])
     h_prev = tf.zeros([batch_size, n_hidden])
     # init loss 
@@ -127,7 +131,7 @@ def build_model():
             all_alphas = tf.concat([all_alphas, temp_alphas],0)
 
         # positive example (exp_loss)
-        pos_loss = -tf.multiply(tf.exp(-(n_frames-i-1)/20.0),-tf.nn.softmax_cross_entropy_with_logits(logits = pred, labels = y))
+        pos_loss = -1*tf.multiply(tf.exp(-(n_frames-i-1)/20.0),-1*tf.nn.softmax_cross_entropy_with_logits(logits = pred, labels = y))
         # negative example
         neg_loss = tf.nn.softmax_cross_entropy_with_logits(labels=y, logits = pred) # Softmax loss
 
@@ -141,7 +145,7 @@ def build_model():
     return x,keep,y,optimizer,loss,lstm_variables,soft_pred,all_alphas
 
 def train():
-    # build model
+    # build modelnp
     x,keep,y,optimizer,loss,lstm_variables,soft_pred,all_alphas = build_model()
     gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.2)
     sess = tf.InteractiveSession(config=tf.ConfigProto(allow_soft_placement=True,gpu_options=gpu_options))
@@ -234,11 +238,11 @@ def evaluation(all_pred,all_labels, total_time = 90, vis = False, length = None)
         counter = 0.0
         for i in range(len(all_pred)):
             tp =  np.where(all_pred[i]*all_labels[i]>=Th)
-            Tp += float(len(tp[0])>0)
-            if float(len(tp[0])>0) > 0:
-                time += tp[0][0] / float(length[i])
+            Tp += np.float64(len(tp[0])>0)
+            if np.float64(len(tp[0])>0) > 0:
+                time += tp[0][0] / np.float64(length[i])
                 counter = counter+1
-            Tp_Fp += float(len(np.where(all_pred[i]>=Th)[0])>0)
+            Tp_Fp += np.float64(len(np.where(all_pred[i]>=Th)[0])>0)
         if Tp_Fp == 0:
             Precision[cnt] = np.nan
         else:
@@ -357,7 +361,7 @@ def vis(model_path):
                     c = cv2.waitKey(50)
                     ret, frame = cap.read()
                     if c == ord('q') and c == 27 and ret:
-                        break;
+                        break
                     counter += 1
               
             cv2.destroyAllWindows()
