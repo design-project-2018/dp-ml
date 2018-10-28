@@ -17,19 +17,21 @@ import sys
 train_path = './dataset/features/training/'
 test_path = './dataset/features/testing/'
 demo_path = './dataset/features/testing/'
-default_model_path = './model/demo_model'
+default_model_path = './model/'
 save_path = './model/'
 video_path = './dataset/videos/testing/positive/'
 # batch_number
 train_num = 126
 test_num = 46
+# gpu_param
+gpu_fraction_usage = 0.5
 
 
 ############## Train Parameters #################
 
 # Parameters
 learning_rate = 0.0001
-n_epochs = 30
+n_epochs = 2
 batch_size = 10
 display_step = 10
 
@@ -147,7 +149,7 @@ def build_model():
 def train():
     # build modelnp
     x,keep,y,optimizer,loss,lstm_variables,soft_pred,all_alphas = build_model()
-    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.2)
+    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=gpu_fraction_usage)
     sess = tf.InteractiveSession(config=tf.ConfigProto(allow_soft_placement=True,gpu_options=gpu_options))
     # mkdir folder for saving model
     if os.path.isdir(save_path) == False:
@@ -308,7 +310,7 @@ def evaluation(all_pred,all_labels, total_time = 90, vis = False, length = None)
 def vis(model_path):
     # build model
     x,keep,y,optimizer,loss,lstm_variables,soft_pred,all_alphas = build_model()
-    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.3)
+    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=gpu_fraction_usage)
     sess = tf.InteractiveSession(config=tf.ConfigProto(allow_soft_placement=True,gpu_options=gpu_options))
     init = tf.global_variables_initializer()
     sess.run(init)
@@ -372,12 +374,12 @@ def test(model_path):
     # load model
     x,keep,y,optimizer,loss,lstm_variables,soft_pred,all_alphas = build_model()
     # inistal Session
-    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.3)
+    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=gpu_fraction_usage)
     sess = tf.InteractiveSession(config=tf.ConfigProto(allow_soft_placement=True,gpu_options=gpu_options))
     init = tf.global_variables_initializer()
     sess.run(init)
     saver = tf.train.Saver()
-    saver.restore(sess, model_path)
+    saver.restore(sess, model_path + "final_model")
     print ("model restore!!!")
     print ("Training")
     test_all(sess,train_num,train_path,x,keep,y,loss,lstm_variables,soft_pred)
