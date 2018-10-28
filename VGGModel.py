@@ -49,7 +49,7 @@ class VGGModel:
         cap = cv2.VideoCapture(path)
         while (ctr<= n_frames):
             _, frame = cap.read()
-            frame_feature = self.extract_VGG(frame)
+            frame_feature = self.extract_feature(frame)
             feature_list.append(frame_feature)
             ctr +=1
         
