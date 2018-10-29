@@ -37,11 +37,11 @@ display_step = 10
 
 # Network Parameters
 n_input = 4096 # fc6 or fc7(1*4096)
-n_detection = 20 # number of object of each image (include image features)
+n_detection = 10 # number of object of each image (include image features)
 n_hidden = 512 # hidden layer num of LSTM
 n_img_hidden = 256 # embedding image features 
 n_att_hidden = 256 # embedding object features
-n_classes = 2 # has accident or not
+n_classes = 5 # has accident or not
 n_frames = 100 # number of frame in each video 
 ##################################################
 
