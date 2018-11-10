@@ -14,10 +14,10 @@ python feature_extractor.py --extractor <PATH TO DP-JETSON-ALG>/object_extractor
 python feature_extractor.py --extractor <PATH TO DP-JETSON-ALG>/optical_flow_extractor --data <PATH TO DATA>/videos/ --output <PATH TO OUTPUT DIRECTORY>
 
 ```
----- 
-# Documentation
 
-## VGG Model Class Methods
+## Network Documentation
+
+### VGG Model Class Methods
 
 *The VGG Model class consists of the Keras implementation of VGG16 with pretrained ImageNet weights, with the addition of 2 dense layers that output a 1 x 4096 feature vector.*
 
@@ -62,7 +62,7 @@ python feature_extractor.py --extractor <PATH TO DP-JETSON-ALG>/optical_flow_ext
 >numpy_array: 1x4096 feature vector 
 ----
 
-## JSON Loader Methods
+### JSON Loader Methods
 
 *The JSON Loader file contains methods that crop objects in videoframes, given the corresponding JSON files with locations to crop from. Follows the specific JSON schema that returns up to 10 objects per frame from previous preprocessing.*
 
@@ -103,3 +103,4 @@ python feature_extractor.py --extractor <PATH TO DP-JETSON-ALG>/optical_flow_ext
 **Returns:** 
 >numpy_array (2): Array of of images, array of probabilities
 ----
+
