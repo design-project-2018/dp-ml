@@ -7,11 +7,19 @@ import cv2
 
 embeddings_path = './dataset/custom_features/'
 labels_path = './dataset/cleaned.csv'
+
+
 label_set = pd.read_csv(labels_path, header=None)
-print(label_set.head(10))
+label_set.rename(columns={1: 'file'}, inplace=True)
+label_set.rename(columns={2: 'label'}, inplace=True)
+
+# Recover filename from 'filename.mp4' string
+for i in range(label_set.shape[0]):
+    temp = label_set.loc[i,'file'].split('.')[0]
+    label_set.loc[i, 'file'] = temp
+
 
 # Given a frame and list of obj coordinates, crop objects in frame
-
 def crop_objects(frame, coord_list):
     obj_list = []
     alpha_list = []
@@ -84,4 +92,15 @@ def main():
 if __name__ == "__main__":
     main()
 
-# '''
+'''
+TEST CODE FOR RUNNING BOTH METHODS
+
+def main():
+    json_path = './000830.json'
+    vid_path = './dataset/videos/testing/negative/000830.mp4'
+    objects_830, alphas_830 = objects_from_clip(vid_path, json_path)
+
+if __name__ == "__main__":
+    main()
+
+'''
