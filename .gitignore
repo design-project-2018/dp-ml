@@ -3,3 +3,6 @@ dataset/*
 *.ipynb_checkpoints
 *.json
 *.jpg
+object_extraction/*
+optical_flow_extractions/*
+optical_flow_extractions.zip
