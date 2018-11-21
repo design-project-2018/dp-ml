@@ -28,8 +28,8 @@ def crop_objects(frame, coord_list):
     obj_list.append(frame)
     alpha_list.append(1)
 
-    if (len(coord_list) < 10):
-        for i in range(1, len(coord_list)):
+    if (len(coord_list) < 9):
+        for i in range(0, len(coord_list)):
             cropped = frame[coord_list[i]['y']:coord_list[i]['y']+coord_list[i]['height'],coord_list[i]['x']:coord_list[i]['x']+coord_list[i]['width']]
             obj_list.append(cropped)
             alpha_list.append(coord_list[i]['probability']/100)
@@ -40,7 +40,7 @@ def crop_objects(frame, coord_list):
             obj_list.append(cropped)
             alpha_list.append(0)
     else:
-        for i in range(1, 10):
+        for i in range(0, 10):
             cropped = frame[coord_list[i]['y']:coord_list[i]['y']+coord_list[i]['height'],coord_list[i]['x']:coord_list[i]['x']+coord_list[i]['width']]
             obj_list.append(cropped)
             alpha_list.append(coord_list[i]['probability']/100)
