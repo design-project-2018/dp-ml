@@ -6,12 +6,6 @@ import cv2
 # Script that creates training set for RNN with dynamic spatial attention model
 
 embeddings_path = './dataset/custom_features/'
-labels_path = './dataset/cleaned.csv'
-
-
-label_set = pd.read_csv(labels_path, header=None)
-label_set.rename(columns={1: 'file'}, inplace=True)
-label_set.rename(columns={2: 'label'}, inplace=True)
 
 # Recover filename from 'filename.mp4' string
 for i in range(label_set.shape[0]):
