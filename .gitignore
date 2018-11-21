@@ -3,4 +3,3 @@ dataset/*
 *.ipynb_checkpoints
 *.json
 *.jpg
-inspect_npz.py
