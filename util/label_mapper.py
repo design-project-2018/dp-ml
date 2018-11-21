@@ -10,13 +10,13 @@ def random_round(num):
     return math.ceil(num) if prob > 0.5 else math.floor(num)
 
 # load dataset and aggregate scores both different labellers
-labels = pd.read_csv('labels/cleaned.csv', header=None)
+labels = pd.read_csv('../dataset/labels/cleaned.csv', header=None)
 labels = labels.groupby([1, 2])[3].mean().reset_index(name=3)
 for index, label in labels.iterrows():
     labels.loc[index, 3] = random_round(label[3])
 
 # walk through all json files and add labels
-for root, directories, filenames in os.walk('object_extraction'):
+for root, directories, filenames in os.walk('../dataset/object_extraction'):
     for filename in filenames:   
         print('Processing file: {}'.format(filename))
         with open(os.path.join(root,filename), 'r+') as f:

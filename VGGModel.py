@@ -34,13 +34,14 @@ class VGGModel:
         
         self.model = model
 
+    ''' Extracts 4096 x 1 high level feature vector from given image '''
     def extract_feature(self, img):
         img = cv2.resize(img, (224, 224))
         img_np = (np.array(img)).astype('float64')
         img_np = np.expand_dims(img_np, axis=0)
         img_data = preprocess_input(img_np)
         
-        return self.model.predict(img_data)
+        return np.transpose(self.model.predict(img_data))
 
     # Create 100 x 4096 feature vector from videoclip of n frames
     def extract_from_clip(self, path, n_frames=100):
