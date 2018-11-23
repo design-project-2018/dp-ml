@@ -3,3 +3,4 @@ dataset/*
 *.ipynb_checkpoints
 *.json
 *.jpg
+__pycache__
