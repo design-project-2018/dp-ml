@@ -34,7 +34,7 @@ def crop_object_features(frame, coord_list, network):
             cropped = frame[coord_list[i]['y']:coord_list[i]['y']+coord_list[i]['height'],coord_list[i]['x']:coord_list[i]['x']+coord_list[i]['width']]
             obj_feat = network.extract_feature(cropped)
             obj_list.append(obj_feat)
-            print("Object list length: {}".format(len(obj_list)))
+            # print("Object list length: {}".format(len(obj_list)))
 
     return np.asarray(obj_list)
 
@@ -51,7 +51,7 @@ def objects_from_clip(vid_path, json_path, network, n_frames=100):
     object_frames = []
     ctr= 1
     while (ctr<= n_frames):
-        print("Frame: {}".format(ctr))
+        # print("Frame: {}".format(ctr))
         _, frame = cap.read()
         obj_coords = json_clip["frames"][ctr-1]["objects"]
         frame_objects = crop_object_features(frame, obj_coords, network)
@@ -66,7 +66,8 @@ def objects_from_clip(vid_path, json_path, network, n_frames=100):
 def write_batch_directory(inputPath, writePath, extraction_network):
 
     dTypes = ['training/', 'testing/'] # dataset folder types
-    vTypes = ['positive/', 'negative/'] # accident/no accident folders
+    vTypes = [ 'negative/', 'positive/'] # accident/no accident folders
+    idx_batch = 1
 
     for dType in dTypes:
         for vType in vTypes:
@@ -76,7 +77,6 @@ def write_batch_directory(inputPath, writePath, extraction_network):
             
             numFiles = len(fileNames)
             idx_file = 0
-            idx_batch = 1
             
             # Need 10 files per batch
             while (numFiles >= 10):
