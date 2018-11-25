@@ -2,6 +2,7 @@ dataset/features/*
 dataset/custom_features/*
 dataset/videos/*
 dataset/object_extraction/*
+dataset/*
 *.ipynb
 *.ipynb_checkpoints
 *.json
