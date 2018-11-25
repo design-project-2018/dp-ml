@@ -14,9 +14,9 @@ import sys
 ############## Global Parameters #################
 
 #path
-train_path = './dataset/features/training/'
-test_path = './dataset/features/testing/'
-demo_path = './dataset/features/testing/'
+train_path = './dataset/custom_features/training/'
+test_path = './dataset/custom_features/testing/'
+demo_path = './dataset/custom_features/testing/'
 default_model_path = './model/'
 save_path = './model/'
 video_path = './dataset/videos/testing/positive/'
@@ -29,7 +29,7 @@ test_num = 46
 
 # Parameters
 learning_rate = 0.0001
-n_epochs = 2
+n_epochs = 30
 batch_size = 10
 display_step = 10
 
@@ -65,7 +65,7 @@ def build_model():
     weights = {
         'em_obj': tf.Variable(tf.random_normal([n_input,n_att_hidden], mean=0.0, stddev=0.01)), # 1 x 4096 x 256 x 1
         'em_img': tf.Variable(tf.random_normal([n_input,n_img_hidden], mean=0.0, stddev=0.01)),
-        'att_w': tf.Variable(tf.random_normal([n_att_hidden, 1],. mean=0.0, stddev=0.01)),
+        'att_w': tf.Variable(tf.random_normal([n_att_hidden, 1], mean=0.0, stddev=0.01)),
         'att_wa': tf.Variable(tf.random_normal([n_hidden, n_att_hidden], mean=0.0, stddev=0.01)),
         'att_ua': tf.Variable(tf.random_normal([n_att_hidden, n_att_hidden], mean=0.0, stddev=0.01)),
         'out': tf.Variable(tf.random_normal([n_hidden, n_classes], mean=0.0, stddev=0.01))
@@ -144,6 +144,21 @@ def build_model():
 
     return x,keep,y,optimizer,loss,lstm_variables,soft_pred,all_alphas
 
+
+
+def encode_ys(y_labels):
+   
+    encoded = []
+
+    for i in range(y_labels.shape[0]):
+        one_hot = np.zeros(5)
+        one_hot[y_labels[i]] = 1
+        encoded.append(one_hot)
+
+    return np.asarray(encoded)
+
+
+
 def train():
     # build modelnp
     x,keep,y,optimizer,loss,lstm_variables,soft_pred,all_alphas = build_model()
@@ -167,9 +182,12 @@ def train():
          tStart_epoch = time.time()
          for batch in n_batchs:
              file_name = '%03d' %batch
+             print('Training on batch number {}'.format(batch))
              batch_data = np.load(train_path+'batch_'+file_name+'.npz')
              batch_xs = batch_data['data']
+             batch_xs = np.squeeze(batch_xs, -1)
              batch_ys = batch_data['labels']
+             batch_ys = encode_ys(batch_ys)
              _,batch_loss = sess.run([optimizer,loss], feed_dict={x: batch_xs, y: batch_ys, keep: [0.5]})
              epoch_loss[batch-1] = batch_loss/batch_size
          # print one epoch
