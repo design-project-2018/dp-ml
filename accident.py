@@ -213,6 +213,7 @@ def test_all(sess,num,path,x,keep,y,loss,lstm_variables,soft_pred):
          # load test_data
          file_name = '%03d' %num_batch
          test_all_data = np.load(path+'batch_'+file_name+'.npz')
+         test_data= test_all_data['data']
          test_data = np.squeeze(test_data, -1)
          test_labels = test_all_data['labels']
          test_labels = encode_ys(test_labels)
