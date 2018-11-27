@@ -120,7 +120,6 @@ def main():
     embeddings_path = './dataset/custom_features/'
 
     write_batch_directory(json_path, embeddings_path, VGG_network)
-    # vid_path = './dataset/videos/training/positive/00000001.mp4'
 
 if __name__ == "__main__":
     main()
