@@ -8,3 +8,4 @@ dataset/*
 *.json
 *.jpg
 __pycache__
+*.zip
