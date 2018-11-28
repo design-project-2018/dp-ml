@@ -30,7 +30,7 @@ test_num = 46
 # Parameters
 learning_rate = 0.0001
 
-n_epochs = 30
+n_epochs = 20
 batch_size = 10
 display_step = 10
 
