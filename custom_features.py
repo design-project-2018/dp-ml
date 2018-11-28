@@ -113,13 +113,29 @@ def write_batch_directory(inputPath, writePath, extraction_network):
     return
                     
 
+def restart_idx(data_path):
+    print("Re-indexing files in {}...".format(data_path))
+    file_names = sorted(os.listdir(data_path))
+
+    num_files = len(file_names)
+    idx_batch = 1
+    for file in file_names:
+        os.rename(data_path + file, data_path + 'batch_'+ str(idx_batch).zfill(3) + '.npz')
+        idx_batch += 1
+
+    print("Renamed {} files in directory {}".format(num_files, data_path))
+    return 
+
 
 def main():
     VGG_network = VGGModel()
     json_path = './dataset/object_extraction/'
     embeddings_path = './dataset/custom_features/'
+    rewrite_path = './dataset/custom_features/testing/'
 
     write_batch_directory(json_path, embeddings_path, VGG_network)
+    restart_idx(rewrite_path)
+
 
 if __name__ == "__main__":
     main()
