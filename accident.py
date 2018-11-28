@@ -258,7 +258,9 @@ def evaluation(all_pred,all_labels, total_time = 90, vis = False, length = None)
     cnt = 0
     AP = 0.0
     print("Counting TP, TN, FP, FN...")
+    print(all_pred.shape[0])
     for Th in sorted(all_pred.flatten()):
+        print("hi")
         if length is not None and Th == 0:
                 continue
         Tp = 0.0
@@ -267,7 +269,6 @@ def evaluation(all_pred,all_labels, total_time = 90, vis = False, length = None)
         time = 0.0
         counter = 0.0
         for i in range(len(all_pred)):
-            print(i)
             tp =  np.where(all_pred[i]*all_labels[i]>=Th)
             Tp += np.float64(len(tp[0])>0)
             if np.float64(len(tp[0])>0) > 0:
