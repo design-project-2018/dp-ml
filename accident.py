@@ -246,11 +246,12 @@ def evaluation(all_pred,all_labels, total_time = 90, vis = False, length = None)
                 all_pred_tmp[idx,total_time-vid:] = all_pred[idx,total_time-vid:]
         all_pred = np.array(all_pred_tmp)
         temp_shape = sum(length)
-    print("length is NOT given")
+        print("length is NOT given")
+
     else:
         length = [total_time] * all_pred.shape[0]
         temp_shape = all_pred.shape[0]*total_time
-    print("Precision, recall, being processed...")
+        print("Precision, recall, being processed...")
     Precision = np.zeros((temp_shape))
     Recall = np.zeros((temp_shape))
     Time = np.zeros((temp_shape))
