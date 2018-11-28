@@ -195,7 +195,7 @@ def train():
          tStop_epoch = time.time()
          print("Epoch Time Cost:", round(tStop_epoch - tStart_epoch,2), "s")
          sys.stdout.flush()
-         if (epoch+1) %5 == 0:
+         if (epoch+1) %20 == 0:
             saver.save(sess,save_path+"model", global_step = epoch+1)
             print("Training")
             test_all(sess,train_num,train_path,x,keep,y,loss,lstm_variables,soft_pred)
