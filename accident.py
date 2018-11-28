@@ -209,12 +209,13 @@ def test_all(sess,num,path,x,keep,y,loss,lstm_variables,soft_pred):
     total_loss = 0.0
 
     for num_batch in range(1,num+1):
-         print('Testing on batch {}'.format(num_batch))
+         print('Processing batch number {}'.format(num_batch))
          # load test_data
          file_name = '%03d' %num_batch
          test_all_data = np.load(path+'batch_'+file_name+'.npz')
          test_data= test_all_data['data']
          test_data = np.squeeze(test_data, -1)
+
          test_labels = test_all_data['labels']
          test_labels = encode_ys(test_labels)
          [temp_loss,pred] = sess.run([loss,soft_pred], feed_dict={x: test_data, y: test_labels, keep: [0.0]})
@@ -227,8 +228,10 @@ def test_all(sess,num,path,x,keep,y,loss,lstm_variables,soft_pred):
          else:
              all_pred = np.vstack((all_pred,pred[:,0:90]))
              all_labels = np.vstack((all_labels,np.reshape(test_labels[:,1],[batch_size,1])))
-
+    print("Running evaluation on all predictions, all labels...")
     evaluation(all_pred,all_labels)
+
+
     return
 
     
@@ -236,21 +239,24 @@ def evaluation(all_pred,all_labels, total_time = 90, vis = False, length = None)
     ### input: all_pred (N x total_time) , all_label (N,)
     ### where N = number of videos, fps = 20 , time of accident = total_time
     ### output: AP & Time to Accident
-
+    print("length is given")
     if length is not None:
         all_pred_tmp = np.zeros(all_pred.shape)
         for idx, vid in enumerate(length):
                 all_pred_tmp[idx,total_time-vid:] = all_pred[idx,total_time-vid:]
         all_pred = np.array(all_pred_tmp)
         temp_shape = sum(length)
+    print("length is NOT given")
     else:
         length = [total_time] * all_pred.shape[0]
         temp_shape = all_pred.shape[0]*total_time
+    print("Precision, recall, being processed...")
     Precision = np.zeros((temp_shape))
     Recall = np.zeros((temp_shape))
     Time = np.zeros((temp_shape))
     cnt = 0
     AP = 0.0
+    print("Counting TP, TN, FP, FN...")
     for Th in sorted(all_pred.flatten()):
         if length is not None and Th == 0:
                 continue
@@ -260,6 +266,7 @@ def evaluation(all_pred,all_labels, total_time = 90, vis = False, length = None)
         time = 0.0
         counter = 0.0
         for i in range(len(all_pred)):
+            print(i)
             tp =  np.where(all_pred[i]*all_labels[i]>=Th)
             Tp += np.float64(len(tp[0])>0)
             if np.float64(len(tp[0])>0) > 0:
@@ -279,7 +286,7 @@ def evaluation(all_pred,all_labels, total_time = 90, vis = False, length = None)
         else:
             Time[cnt] = (1-time/counter)
         cnt += 1
-
+    print("Ok something is happening here... ")
     new_index = np.argsort(Recall)
     Precision = Precision[new_index]
     Recall = Recall[new_index]
@@ -297,7 +304,7 @@ def evaluation(all_pred,all_labels, total_time = 90, vis = False, length = None)
     new_Time = new_Time[~np.isnan(new_Precision)]
     new_Recall = new_Recall[~np.isnan(new_Precision)]
     new_Precision = new_Precision[~np.isnan(new_Precision)]
-
+    print("Almost there... ")
     if new_Recall[0] != 0:
         AP += new_Precision[0]*(new_Recall[0]-0)
     for i in range(1,len(new_Precision)):
@@ -309,7 +316,7 @@ def evaluation(all_pred,all_labels, total_time = 90, vis = False, length = None)
     print("Recall@80%, Time to accident= " +"{:.4}".format(sort_time[np.argmin(np.abs(sort_recall-0.8))] * 5))
 
     ### visualize
-
+    print("visualize mofos...")
     if vis:
         plt.plot(new_Recall, new_Precision, label='Precision-Recall curve')
         plt.xlabel('Recall')
