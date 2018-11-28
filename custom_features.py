@@ -73,7 +73,7 @@ def write_batch_directory(inputPath, writePath, extraction_network):
         for vType in vTypes:
             jsonFolder = inputPath + dType + vType
             vidFolder = './dataset/videos/{}{}'.format(dType, vType)
-            fileNames = os.listdir(jsonFolder)
+            fileNames = sorted(os.listdir(jsonFolder))
             
             numFiles = len(fileNames)
             idx_file = 0
@@ -127,13 +127,30 @@ def restart_idx(data_path):
     return 
 
 
+
+def move_files(save_path, train_num=126, test_num=46):
+
+    if os.path.isdir(save_path + 'training/') == False:
+        os.mkdir(save_path + 'training/')
+    if os.path.isdir(save_path + 'testing/') == False:
+        os.mkdir(save_path + 'testing/')
+        
+    print("Moving files to training and testing folders")
+    for i in range(1, train_num+1):
+        os.rename(save_path + 'batch_'+ str(i).zfill(3) + '.npz', save_path + 'training/'+'batch_'+ str(i).zfill(3) + '.npz')
+    for i in range(train_num+1, train_num+1+test_num+1):
+        os.rename(save_path + 'batch_'+ str(i).zfill(3) + '.npz', save_path + 'testing/'+'batch_'+ str(i).zfill(3) + '.npz')
+    return
+
+
 def main():
     VGG_network = VGGModel()
     json_path = './dataset/object_extraction/'
     embeddings_path = './dataset/custom_features/'
     rewrite_path = './dataset/custom_features/testing/'
-
+    
     write_batch_directory(json_path, embeddings_path, VGG_network)
+    move_files(embeddings_path, train_num=126, test_num=46)
     restart_idx(rewrite_path)
 
 
