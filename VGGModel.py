@@ -14,26 +14,11 @@ class VGGModel:
 
         print('Initializing VGG16 model with ImageNet weights...')
 
-        # # Initialize two fc layers
-        # top_model = Sequential()
-        # top_model.add(Flatten(input_shape=base_model.output_shape[1:]))
-        # top_model.add(Dense(4096, activation='relu'))
-        # top_model.add(Dense(4096, activation='relu'))
-
-        # # Copy VGG layers in order to concatenate
-        # model = Sequential()
-        # for layer in base_model.layers:
-        #     model.add(layer)        base_model.layers.pop()
         base_model.layers.pop() # Get rid of the classification layer
         base_model.layers.pop() # Get rid of the dropout layer
         base_model.outputs = [base_model.layers[-1].output]
         base_model.layers[-1].outbound_nodes = []
 
-        # model.add(top_model)
-
-        # Make the layers untrainable
-        # for layer in model.layers:
-        #     layer.trainable = False
         if (verbose):
             base_model.summary()
         
@@ -78,16 +63,3 @@ if __name__ == "__main__":
     main()
 
 '''
-        
-def main():
-    sammy = VGGModel()
-    img_path = './eddy_3.jpg'
-    # vid_path = './dataset/videos/training/positive/000001.mp4'
-    img = cv2.imread(img_path)
-    test = sammy.extract_feature(img)
-    # test_vid = sammy.extract_from_clip(vid_path)
-    print(test.shape)
-    # print(test_vid.shape)
-
-if __name__ == "__main__":
-    main()
