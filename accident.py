@@ -419,6 +419,30 @@ def test(model_path):
 
 
 
+def query(model_path, file_path='./dataset/custom_features/testing/batch_001.npz'):
+    #load model
+    x,keep,y,optimizer,loss,lstm_variables,soft_pred,all_alphas = build_model()
+    # intialize Session
+    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.9)
+    sess = tf.InteractiveSession(config=tf.ConfigProto(allow_soft_placement=True,gpu_options=gpu_options))
+    init = tf.global_variables_initializer()
+    sess.run(init)
+    saver = tf.train.Saver()
+    saver.restore(sess, model_path + "final_model")
+    print ("model restored success")
+
+    # load test_data
+
+    test_batch = np.load(file_path)
+    test_X = test_batch['data']
+    test_X = np.squeeze(test_X, -1)
+
+    feed_dict = {x: test_X, keep: [0.5]}
+    classification = sess.run(y, feed_dict)
+    print (classification)
+
+    
+
 if __name__ == '__main__':
     args = parse_args()
     if args.gpu:
@@ -432,3 +456,5 @@ if __name__ == '__main__':
            test(args.model)
     elif args.mode == 'demo':
            vis(args.model)
+    elif args.mode == 'pred':
+           query(args.model)
