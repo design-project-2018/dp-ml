@@ -1,8 +1,12 @@
 import os
 os.environ["TF_CPP_MIN_LOG_LEVEL"]="3"
 import cv2
+import json
 import tensorflow as tf
+
 from tensorflow.contrib import rnn as tf_rnn
+from VGGModel import VGGModel
+
 import argparse
 import numpy as np
 import os
@@ -30,7 +34,7 @@ test_num = 46
 # Parameters
 learning_rate = 0.0001
 
-n_epochs = 20
+n_epochs = 30
 batch_size = 10
 display_step = 10
 
@@ -135,8 +139,10 @@ def build_model():
         pos_loss = -1*tf.multiply(tf.exp(-(n_frames-i-1)/20.0),-1*tf.nn.softmax_cross_entropy_with_logits(logits = pred, labels = y))
         # negative example
         neg_loss = tf.nn.softmax_cross_entropy_with_logits(labels=y, logits = pred) # Softmax loss
-
-        temp_loss = tf.reduce_mean(tf.add(tf.multiply(pos_loss,y[:,1]),tf.multiply(neg_loss,y[:,0])))
+        temp_pos_loss = tf.add(tf.multiply(pos_loss, y[:,3]), tf.multiply(pos_loss, y[:,2]))
+        temp_neg_loss = tf.add(tf.multiply(neg_loss, y[:,1]), tf.multiply(neg_loss, y[:,0]))
+        temp_loss = tf.reduce_mean(tf.add(temp_pos_loss, temp_neg_loss))
+        # temp_loss = tf.reduce_mean(tf.add(tf.multiply(pos_loss,y[:,1]),tf.multiply(neg_loss,y[:,0])))
         #loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(pred, y))
         loss = tf.add(loss, temp_loss)
         
@@ -182,7 +188,7 @@ def train():
          tStart_epoch = time.time()
          for batch in n_batchs:
              file_name = '%03d' %batch
-             print('Training on batch number {}'.format(batch))
+             # print('Training on batch number {}'.format(batch))
              batch_data = np.load(train_path+'batch_'+file_name+'.npz')
              batch_xs = batch_data['data']
              batch_xs = np.squeeze(batch_xs, -1)
@@ -195,7 +201,8 @@ def train():
          tStop_epoch = time.time()
          print("Epoch Time Cost:", round(tStop_epoch - tStart_epoch,2), "s")
          sys.stdout.flush()
-         if (epoch+1) %20 == 0:
+
+         if (epoch+1) % 100 == 0:
             saver.save(sess,save_path+"model", global_step = epoch+1)
             print("Training")
             test_all(sess,train_num,train_path,x,keep,y,loss,lstm_variables,soft_pred)
@@ -207,9 +214,9 @@ def train():
 
 def test_all(sess,num,path,x,keep,y,loss,lstm_variables,soft_pred):
     total_loss = 0.0
-
+    print("Testing")
     for num_batch in range(1,num+1):
-         print('Processing batch number {}'.format(num_batch))
+         # print('Processing batch number {}'.format(num_batch))
          # load test_data
          file_name = '%03d' %num_batch
          test_all_data = np.load(path+'batch_'+file_name+'.npz')
@@ -260,7 +267,6 @@ def evaluation(all_pred,all_labels, total_time = 90, vis = False, length = None)
     print("Counting TP, TN, FP, FN...")
     print(all_pred.shape[0])
     for Th in sorted(all_pred.flatten()):
-        print("hi")
         if length is not None and Th == 0:
                 continue
         Tp = 0.0
@@ -411,39 +417,15 @@ def test(model_path):
     sess.run(init)
     saver = tf.train.Saver()
     saver.restore(sess, model_path + "final_model")
-    print ("model restore!!!")
+    print ("model restored...")
     print ("Training")
     test_all(sess,train_num,train_path,x,keep,y,loss,lstm_variables,soft_pred)
     print ("Testing")
     test_all(sess,test_num,test_path,x,keep,y,loss,lstm_variables,soft_pred)
 
 
-
-def query(model_path, file_path='./dataset/custom_features/testing/batch_001.npz'):
-    #load model
-    x,keep,y,optimizer,loss,lstm_variables,soft_pred,all_alphas = build_model()
-    # intialize Session
-    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.9)
-    sess = tf.InteractiveSession(config=tf.ConfigProto(allow_soft_placement=True,gpu_options=gpu_options))
-    init = tf.global_variables_initializer()
-    sess.run(init)
-    saver = tf.train.Saver()
-    saver.restore(sess, model_path + "final_model")
-    print ("model restored success")
-
-    # load test_data
-
-    test_batch = np.load(file_path)
-    test_X = test_batch['data']
-    test_X = np.squeeze(test_X, -1)
-
-    feed_dict = {x: test_X, keep: [0.5]}
-    classification = sess.run(y, feed_dict)
-    print (classification)
-
-    
-
 if __name__ == '__main__':
+
     args = parse_args()
     if args.gpu:
         os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
@@ -454,7 +436,4 @@ if __name__ == '__main__':
            train()
     elif args.mode == 'test':
            test(args.model)
-    elif args.mode == 'demo':
-           vis(args.model)
-    elif args.mode == 'pred':
-           query(args.model)
+        
