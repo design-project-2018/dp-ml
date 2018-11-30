@@ -30,7 +30,7 @@ test_num = 46
 # Parameters
 learning_rate = 0.0001
 
-n_epochs = 20
+n_epochs = 30
 batch_size = 10
 display_step = 10
 
@@ -135,8 +135,10 @@ def build_model():
         pos_loss = -1*tf.multiply(tf.exp(-(n_frames-i-1)/20.0),-1*tf.nn.softmax_cross_entropy_with_logits(logits = pred, labels = y))
         # negative example
         neg_loss = tf.nn.softmax_cross_entropy_with_logits(labels=y, logits = pred) # Softmax loss
-
-        temp_loss = tf.reduce_mean(tf.add(tf.multiply(pos_loss,y[:,1]),tf.multiply(neg_loss,y[:,0])))
+        temp_pos_loss = tf.add(tf.multiply(pos_loss, y[:,3]), tf.multiply(pos_loss, y[:,2]))
+        temp_neg_loss = tf.add(tf.multiply(neg_loss, y[:,1]), tf.multiply(neg_loss, y[:,0]))
+        temp_loss = tf.reduce_mean(tf.add(temp_pos_loss, temp_neg_loss))
+        # temp_loss = tf.reduce_mean(tf.add(tf.multiply(pos_loss,y[:,1]),tf.multiply(neg_loss,y[:,0])))
         #loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(pred, y))
         loss = tf.add(loss, temp_loss)
         
@@ -195,7 +197,7 @@ def train():
          tStop_epoch = time.time()
          print("Epoch Time Cost:", round(tStop_epoch - tStart_epoch,2), "s")
          sys.stdout.flush()
-         if (epoch+1) %20 == 0:
+         if (epoch+1) %30 == 0:
             saver.save(sess,save_path+"model", global_step = epoch+1)
             print("Training")
             test_all(sess,train_num,train_path,x,keep,y,loss,lstm_variables,soft_pred)
@@ -260,7 +262,6 @@ def evaluation(all_pred,all_labels, total_time = 90, vis = False, length = None)
     print("Counting TP, TN, FP, FN...")
     print(all_pred.shape[0])
     for Th in sorted(all_pred.flatten()):
-        print("hi")
         if length is not None and Th == 0:
                 continue
         Tp = 0.0
@@ -419,7 +420,7 @@ def test(model_path):
 
 
 
-def query(model_path, file_path='./dataset/custom_features/testing/batch_001.npz'):
+def predict(model_path, file_path):
     #load model
     x,keep,y,optimizer,loss,lstm_variables,soft_pred,all_alphas = build_model()
     # intialize Session
@@ -436,10 +437,15 @@ def query(model_path, file_path='./dataset/custom_features/testing/batch_001.npz
     test_batch = np.load(file_path)
     test_X = test_batch['data']
     test_X = np.squeeze(test_X, -1)
+    y_dummies = []
 
-    feed_dict = {x: test_X, keep: [0.5]}
-    classification = sess.run(y, feed_dict)
-    print (classification)
+    for i in range(test_X.shape[0]):
+        y_dummies.append(np.zeros(5))
+    y_dummies = np.asarray(y_dummies)
+
+    feed_dict = {x: test_X, y: y_dummies ,keep: [0.0]}
+    classification = sess.run(soft_pred, feed_dict)
+    print (classification[0])
 
     
 
@@ -457,4 +463,6 @@ if __name__ == '__main__':
     elif args.mode == 'demo':
            vis(args.model)
     elif args.mode == 'pred':
-           query(args.model)
+        pred_path = './dataset/custom_features/testing/batch_017.npz'
+        predict(args.model, pred_path)
+        
