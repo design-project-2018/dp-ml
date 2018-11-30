@@ -35,6 +35,7 @@ class DSA_RCNN:
 
     def __init__(self, verbose=True):
         ''' Build DSA RCNN '''
+        tf.reset_default_graph()
         # tf Graph input
         x = tf.placeholder("float", [None, n_frames ,n_detection, n_input])
         y = tf.placeholder("float", [None, n_classes])
@@ -121,21 +122,21 @@ class DSA_RCNN:
                 loss = tf.add(loss, temp_loss)
             
             # Define loss and optimizer
-            optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss/n_frames) # Adam Optimizer
+        optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss/n_frames) # Adam Optimizer
 
-            ''' Initialize VGG network for feature extraction '''
-            VGG_model = VGGModel(verbose=True)
-            print("VGG model built...")
-            self.VGG_model = VGG_model
-            self.x = x
-            self.y = y
-            self.keep = keep
-            self.optimizer = optimizer
-            self.loss = loss
-            self.lstm_variables = lstm_variables 
-            self.soft_pred = soft_pred
-            self.all_alphas = all_alphas
-            print("DSA RCNN Model built...")
+        ''' Initialize VGG network for feature extraction '''
+        VGG_model = VGGModel(verbose=True)
+        print("VGG model built...")
+        self.VGG_model = VGG_model
+        self.x = x
+        self.y = y
+        self.keep = keep
+        self.optimizer = optimizer
+        self.loss = loss
+        self.lstm_variables = lstm_variables 
+        self.soft_pred = soft_pred
+        self.all_alphas = all_alphas
+        print("DSA RCNN Model built...")
 
 
 
