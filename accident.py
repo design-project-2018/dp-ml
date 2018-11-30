@@ -1,8 +1,12 @@
 import os
 os.environ["TF_CPP_MIN_LOG_LEVEL"]="3"
 import cv2
+import json
 import tensorflow as tf
+
 from tensorflow.contrib import rnn as tf_rnn
+from VGGModel import VGGModel
+
 import argparse
 import numpy as np
 import os
@@ -412,13 +416,60 @@ def test(model_path):
     sess.run(init)
     saver = tf.train.Saver()
     saver.restore(sess, model_path + "final_model")
-    print ("model restore!!!")
+    print ("model restored...")
     print ("Training")
     test_all(sess,train_num,train_path,x,keep,y,loss,lstm_variables,soft_pred)
     print ("Testing")
     test_all(sess,test_num,test_path,x,keep,y,loss,lstm_variables,soft_pred)
 
 
+#################### SOME EXPERIMENTAL SHIT #######################################################################
+
+''' Given a frame and list of obj coordinates, crop objects in frame, then extracts object features ''' 
+def crop_object_features(frame, coord_list, network):
+    obj_list = []
+
+    # Append full frame first
+    frame = cv2.resize(frame, (224, 224))
+    full_frame_feat = network.extract_feature(frame)
+    obj_list.append(full_frame_feat)
+
+    if (len(coord_list) <= 9):
+        for i in range(0, len(coord_list)):
+            cropped = frame[coord_list[i]['y']:coord_list[i]['y']+coord_list[i]['height'],coord_list[i]['x']:coord_list[i]['x']+coord_list[i]['width']]
+            obj_feat = network.extract_feature(cropped)
+            obj_list.append(obj_feat)
+        
+        # If less than 10 objects detected
+        for j in range(len(coord_list), 9):
+            obj_feat = np.zeros_like(obj_list[len(coord_list)])
+            obj_list.append(obj_feat)
+    else:
+        for i in range(0, 9):
+            cropped = frame[coord_list[i]['y']:coord_list[i]['y']+coord_list[i]['height'],coord_list[i]['x']:coord_list[i]['x']+coord_list[i]['width']]
+            obj_feat = network.extract_feature(cropped)
+            obj_list.append(obj_feat)
+            # print("Object list length: {}".format(len(obj_list)))
+
+    return np.asarray(obj_list)
+
+''' Output cropped images for each frame in clip given videopath, path to corresponding JSON  '''
+def objects_from_clip(path, network, start, finish):
+    obj_frames = []
+    ctr = start
+    while (ctr <= finish):
+        # Read JSON file with
+        json_path = path + ('{}.json'.format(ctr))
+        with open(json_path) as f:
+            json_clip = json.load(f)
+
+        frame = cv2.imread(path + ('{}.jpg'.format(ctr)))
+        obj_coords = json_clip["objects"]
+        frame_objects = crop_object_features(frame, obj_coords, network)
+        obj_frames.append(frame_objects)
+        ctr +=1
+
+    return np.asarray(obj_frames)
 
 def predict(model_path, file_path):
     #load model
@@ -437,6 +488,7 @@ def predict(model_path, file_path):
     test_batch = np.load(file_path)
     test_X = test_batch['data']
     test_X = np.squeeze(test_X, -1)
+    test_X = test_X[0]
     y_dummies = []
 
     for i in range(test_X.shape[0]):
@@ -445,11 +497,13 @@ def predict(model_path, file_path):
 
     feed_dict = {x: test_X, y: y_dummies ,keep: [0.0]}
     classification = sess.run(soft_pred, feed_dict)
-    print (classification[0])
+    print (classification)
 
     
 
 if __name__ == '__main__':
+    VGG_model = VGGModel()
+
     args = parse_args()
     if args.gpu:
         os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
