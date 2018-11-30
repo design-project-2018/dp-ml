@@ -1,3 +1,0 @@
-model_checkpoint_path: "final_model"
-all_model_checkpoint_paths: "model-30"
-all_model_checkpoint_paths: "final_model"
